@@ -1,0 +1,178 @@
+---
+title: "Multidimensional Scaling"
+author: "Ananyo Dey Shreya Chatterjee Kaustav Paul"
+date: "`r Sys.Date()`"
+output: pdf_document
+fonsize: 12pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\newpage
+# Introduction \
+The term **Multidimensional** refers the more than one dimension.The data we are working with are highly dimensional. Now, Datasets are often high-dimensional 
+\begin{enumerate}
+\item Could be high-dimensional in terms of number of observations ($n$)
+\item Could be high-dimensional in terms of number of variables ($p$)
+\end{enumerate}
+\textbf{Note:} We will proceed our discussion throughout assuming high-dimension refers in number of variables
+
+### Data Reduction \
+Having a large number of data is both blessings and curse.\
+\begin{itemize}
+\item{Blessings}: 
+One must have lots of information.
+\item{Curse}:
+ Increased computational complexity and performance time if we don't perform any dimension reduction.
+ Hard to visualize the data.
+\end{itemize}
+Suppose a set of $n$ objects is under consideration and between each pair objects $(r,s)$ there is a measurement $\delta_{rs}$ of the "dissimilarity" between objects. For example the set of objects might be ten bottles of whisky, each from a different distillery. The dissimilarity $\delta_{rs}$ might be an integer score between zero and ten given to the comparison of the $r^{th}$ and the $s^{th}$ whiskies by an expert judge of malt whisky. The judge would be given a tot from the $r^{th}$ bottle and one from the $s^{th}$ and then score the comparison: 0-the whiskies are so alike she/he cannot tell the difference, to 10-the whiskies are totally different. The judge is presented with all forty-five possible pairs of whiskies, and after a pleasant day's work, provides the data analyst with a total set of dissimilarities $\{\delta_{rs}\}$.\
+A narrow definition of multidimensional scaling (often abbreviated to MDS) is the search for a low dimensional space, usually Euclidean, in which points in the space represent the objects (whiskies), one point representing one object, and such that the distances between the points in the space, $\{\delta_{rs}\}$, match, as well as possible, the original dissimilarities $\{\delta_{rs}\}$. The techniques used for the search for the space and the associated configuration of points form metric and nonmetric multidimensional scaling.
+
+## Application of MDS
+MDS is an established multivariate analysis technique used in a multitude of disciplines like social sciences, behavioral sciences, political sciences, marketing, etc. One of the main advantages of MDS is that we can analyze any kind of proximity data, i.e. dissimilarity or similarity measures. For instance, MDS acts as an (often nonlinear) dimension reduction technique when the dissimilarities are distances between high-dimensional objects. Furthermore, when the dissimilarities are shortest-path distances in a graph, MDS acts as a graph layout technique. Furthermore, MDS is used in machine learning in solving classification problems. Some related developments in machine learning include Isomap and kernel PCA. 
+
+## Preliminaries
+We describe preliminary material on proximities and metrics.\
+\textit{Proximity} literally means nearness in space, time or in some other way. The "nearness" of objects, individuals, stimuli needs definition and measurement prior to statistical analysis. In some situations, this is straightforward, but in others, difficult and controversial. Measures of proximity are of two types: similarity and dissimilarity with the obvious interpretation of measuring how similar or dissimilar objects are to each other. In this section, we introduce some of the terminology and define some of the proximity measures discussed in the following chapters.\
+\textbf{Definiton :} An $(n \times n)$ matrix \textbf{D} is called a distance matrix if it is symmetric and $$ d_{rr} = 0,\hspace{1mm} d_{rs} \geq 0, r\neq s. $$ The first property above is called reflectivity, and the second property is called non-negativity. Note that there is no need to satisfy the triangle inequality.\
+\textbf{Definiton :} The Euclidean distance between two points $p = (p_1, ..., p_n)$ and $q = (q_1, ..., q_n)$ in $R^n$ is given by the formula, $$ d(p,q)= \sqrt{\sum_{i = 1}^{n}(p_i - q_i)^2} $$
+\textbf{Definition :} A distance matrix \textbf{D} is called Euclidean if there exists a configuration of points in some Euclidean space whose interpoint distances are given by \textbf{D}; that is, if for some $p$, there exists points \textbf{$x_1$}, ..., \textbf{$x_n$} $\in R^p$ such that} $$d_{rs}^2 = (x_r - x_s)^T(x_r - x_s)$$ where $^T$ denotes the transpose of a matrix.\
+\textbf{Definition :} A function $d: X \times X \rightarrow R$ is called a metric if the following conditions are fulfilled for all $x, y, z \in X:$
+\begin{itemize}
+\item{(reflectivity) $d(x, x) = 0$}
+\item{(positivity) $d(x, y) > 0$ for $x \neq y$}
+\item{(symmetry) $d(x, y) = d(y, x)$}
+\item{(triangle inequality) $d(x, y) \leq d(x, z) + d(z, y)$}
+\end{itemize}
+A metric space (X, d) is a set X equipped with a metric $d: X \times X \rightarrow R$\
+In some situations we start not with distances between $n$ objects, but with similarities.\
+\textbf{Definition :} An $(n \times n)$ matrix \textbf{C} is called a similarity matrix if $c_{rs} = c_{sr}$ and if $c_{rs} \leq c_{sr}$ for all $r, s$\
+To use the techniques of the preceding method, it is necessary to transform the similarities to distances. A useful transformation is the following. The standard transformation from a similarity matrix \textbf{C} to a distance matrix \textbf{D} is defined by $$ d_{rs} = (c_{rr} - 2c_{rs} + c_{ss})^{\frac{1}{2}}$$ Hence, \textbf{D} is a distance matrix. \
+Similarities (dissimilarities) are constructed from a data matrix for the objects. These are then called similarity (dissimilarity) coefficients. Several authors for an example Cormack, Jardine and Sibson, Anderberg, Sneath and Sokal, Jackson \textit{et al.}, Snijders \textit{et al.} discuss various similarity and dissimilarity measures together with their associated problems. The following synthesis of the work of these authors attempts to outline the main ideas behind forming dissimilarities from a data matrix. Let, \textbf{X} $= [x_{ri}]$ denoted the data matrix obtained for $n$ objects on $p$ variables. The vector of observations for the $r^{th}$ object is denoted by \textbf{$x_r$} = [\textbf{$x_r^T$}]. 
+\begin{itemize}
+\item{ \textit{Quantative Data :} The following table gives some of possible dissimilarity measures for quantitative data that are in particular, continuous, possibly discrete, but not binary.}
+\end{itemize}
+\begin{center}
+\begin{tabular}{|c|c|}
+  \hline
+  Euclidean Distance & $\delta_{rs} = \{ \sum_i (x_{ri} - x_{si})^2\}^{\frac{1}{2}}$ \\
+  \hline
+  Mahalanobis Distance & $\delta_{rs} = $ {(\text{$x_r$} - \textbf{$x_s$})$^T \Sigma^{-1}${(\text{$x_r$} - \textbf{$x_s$})}}\\
+  \hline
+  Minkowski metric &  $\delta_{rs} = \{\sum_{i} w_i |x_{ri} - x_{si}|^{\lambda}\}^{\frac{1}{\lambda}} , \lambda \geq 0$\\
+  \hline
+  Bhattacharya distance & $\delta_{rs} = \{ \sum_i (x_{ri}^{\frac{1}{2}} - x_{si}^{\frac{1}{2}})^2\}^{\frac{1}{2}}$ \\
+  \hline
+  Bray-Curtis & $\delta_{rs} = \frac{1}{p}\frac{\sum_i |x_{ri} - x_{si}|}{\sum_i (x_{ri} + x_{si})}$\\
+  \hline
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+\item{\textit{Binary Data :}}
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+        & & \textbf{Object s} & & \\
+        & & $1$ & $0$ & \\
+         & $1$ & $a$ & $b$ & $a+b$ \\
+        \cline{2-5}
+        \textbf{Object s} & $0$ & $c$ & $d$ & $c+d$ \\
+        \hline
+    \end{tabular}
+\end{center}
+
+The following table gives some of possible dissimilarity measures for binary data\
+\begin{center}
+\begin{tabular}{|c|c|}
+  \hline
+  Hamman & $s_{rs} = \frac{a-(b+c)+d}{a+b+c+d}$\\
+  \hline
+  Braun, Blanque & $s_{rs} = \frac{a}{max\{(a+b),(a+c)\}}$\\
+  \hline
+  Kulczynski & $s_{rs} = \frac{a}{(b+c)}$\\
+  \hline
+  Yule & $s_{rs} = \frac{ad - bc}{ad + bc}$\\
+  \hline
+  Russell, Rao & $s_{rs} = \frac{a}{(a+b+c+d)}$\\
+  \hline
+\end{tabular}
+\end{center}
+###### \textbf{An Example} \
+A simple test example is given the data of distances between 8 city in Australia are loaded from [Aus.csv]( http://rosetta.reltech.org/TC/v15/Mapping/data/dist-Aus.csv) and the aim is to construct a geographical map of Australia based on this information. Since these road distances equal the true distances subject to small perturbations, we expect that any sensible MDS method will produce a configuration which is "close" to the true map of these towns.However, the distances need not be based on Euclidean distances, and can represent many types of dissimilarities between objects.
+```{r, echo=FALSE}
+dist.au <- read.csv("http://rosetta.reltech.org/TC/v15/Mapping/data/dist-Aus.csv")
+dist.au <- dist.au[,-1]
+row.names(dist.au) <- c("Adelaide", "Alice Springs", "Brisbane", "Darwin", "Hobart", "Melbourne", "Perth", "Sydney")
+colnames(dist.au) <- c("Adelaide", "Alice Springs", "Brisbane", "Darwin", "Hobart", "Melbourne", "Perth", "Sydney")
+dist.au
+
+```
+
+After that, we run Multidimensional Scaling (MDS) with function cmdscale(), and get x and y coordinates. Then we visualize the result, which shows the positions of cities are very close to their relative locations on a map.
+```{r,echo=FALSE}
+fit <- cmdscale(dist.au, eig = TRUE, k = 2)
+x <- fit$points[, 1]
+y <- fit$points[, 2]
+plot(x, y, pch = 19, xlim = range(x) + c(0, 600))
+city.names <- c("Adelaide", "Alice Springs", "Brisbane", "Darwin", "Hobart", 
+    "Melbourne", "Perth", "Sydney")
+text(x, y, pos = 4, labels = city.names)
+```
+
+By flipping both x- and y-axis, Darwin and Brisbane are moved to the top (north), which makes it easier to compare with a map.
+
+```{r cars, echo=FALSE}
+x <- 0 - x
+y <- 0 - y
+plot(x, y, pch = 19, xlim = range(x) + c(0, 600))
+text(x, y, pos = 4, labels = city.names)
+```
+
+
+Also in some cases, we start not with dissimilarities but with a set of similarities between objects. An example of similarity between two Morse code signals could be the percentage of people who think the Morse code sequences corresponding to the pair of characters are identical after hearing them in rapid succession. Such data for characters consisting of the 10 numbers in Morse code. These "similarities" can then be used to plot the signals in two-dimensional space. The purpose of this plot is to observe which signals were "like", i.e. near. and which were "unlike", i.e. far from each other, and also to observe the general interrelationship between signals.
+
+# Prime Goals \
+Suppose there are $n$ objects with dissimilarities $\{\delta_{rs}\}$. Metric  MDS attempts to find a set of points in a Euclidean space where each point represents one of the objects and the distance between points $\{\delta_{rs}\}$ are such that \
+\begin{equation}
+d_{rs} \approx f(\delta_{rs})
+\end{equation}
+where $f$ is a continuous parametric monotonic function. The function $f$ can either be the identity function or a function that attempts to transform the dissimilarities to a distance-like form.
+Mathematically, let the objects comprise a set $O$. Let the dissimilarity, defined on $O \times O$, between objects $r$ and $s$ be $\delta_{rs} (r, s \in O)$. Let $\phi$ be an arbitrary mapping from $O$ to $E$, where $E$ is usually a Euclidean space, but not necessarily so, in which a set of points are to represent the objects. Thus let $\phi(r) = x_r (r \in O, x_r \in E)$, and let $X = \{x_r : r \in O \}$, the image set. Let the distance between the points $x_r$, $x_s$ in $X$ be given by $d_{rs}$. The aim is to find a mapping $\phi$, for which $d_{rs}$. is approximately equal to $f(\delta_{rs})$ for all $r, s \in O$. 
+The two main metric MDS methods, classical scaling and least squares scaling, will be considered here.\
+
+## Classical Scaling \
+Classical scaling originated in the 1930s when Young and Householder (1938) showed how starting with a matrix of distances between points  in a Euclidean space, coordinates for the points can be found such that distances preserved. Torgerson (1952) brought the subject to popularity busing the technique for scaling.
+
+### Recovery of Coorinates \
+In the \textbf{Aus.csv}  saw an application of scaling where a map of Australia  cities was constructed from journey times by road between the cities. Suppose the starting point for the procedure had been the actual Euclidean distances between the various cities.Can original positions of the cities be found? They can, but only relative to each other since any solution can be translated, rotated and reflected, giving rise to another equally valid solution. The method for finding the original Euclidean coordinates from derived Euclidean distances was first given by Schoenberg (1935) and Young and Householder (1938).
+
+#### Theory of Multidimensional Scaling\
+
+##### \textbf{Classical Scaling}\
+
+Starting with a distance matrix D, the object of MDS is to find points $P_1, P_2, ..., P_n$ in $k$ dimensions such that if $\hat{d_{rs}}$ denotes the Euclidean distance between $P_r$ and $P_s$, then $\hat{\textbf{D}}$ is "similar" in some sense to \textbf{D}. The points $P_r$ are unknown and usually the dimension $k$ is also unknown. In practice, on usually limits the dimension to $k$ = 1, 2  or 3 in order to facilitate the interpretation of the solution.
+The following theorem enables us to tell whether \textbf{D} is Euclidean, and, if so, how to find a corresponding configuration of points. For any distance matrix \textbf{D}, let
+\begin{equation}
+A = ((a_{rs})), \hspace{5mm} a_{rs} = -\frac{1}{2}d_{rs}^2
+\end{equation}
+and set \textbf{B = HAH} where $H = I -  \frac{1}{n}11^T$ is the $(n \times n)$ centering matrix.\
+
+\textbf{Theorem}: Let \textbf{D} be a distance matrix and defined by \textbf{B} by previous, then \textbf{D} is Euclidean \textit{if and only if} \textbf{B} is p.s.d. In particular, the following results hold:\
+\begin{enumerate}
+\item{If \textbf{D} is the matrix of Euclidean interpoint distances fo a configuration \textbf{Z} = (\textbf{$z_1$}, ..., \textbf{$z_n$})$^T$, then $$ b_{rs} = (z_r - \bar{z})^T(z_s - \bar{z}), \hspace{3mm} r,s = 1, ..., n$$
+In matrix form it becomes \textbf{B = (HZ)(HZ)$^T$} so \textbf{B} $\geq 0$. Note that \textbf{B} can be interpreted as the "\textit{centred inner product matrix} for configuration of \textbf{Z}}
+\item{Conversely, if \textbf{B} is p.s.d of rank p then a configuration corresponding to \textbf{B} can be constructed as follows, let $\lambda_1 > ... > \lambda_p$ denote the positive eigenvalues of \textbf{B} with corresponding eigenvectors \textbf{X} = (\textbf{$x_{(1)}$}, ..., \textbf{$x_{(p)}$})$^T$ normalized by $$x_{(i)}^Tx_{(i)} = \lambda_i, \hspace{3mm} i = 1, 2 ,... ,p$$
+Then the points P, in $R^p$ with coordinates \textbf{$x_r$} = (\textbf{$x_{(r1)}$}, ..., \textbf{$x_{(rp)}$})$^T$ (so \textbf{$x_r$} is the $r^{th}$ row of \textbf{X}) have interpoint distances given by \textbf{D}. Further, this configuration has centre of gravity $\bar{x} = 0$, and \textbf{B} represents the inner product matrix for this configuration}
+\end{enumerate}\ 
+To be of practical use, a configuration of points needs to be found for a set of dissimilarities $\{\delta_{rs}\}$ rather than simply for true Euclidean distances between points $\{\delta_{rs}\}$.\
+Suppose dissimilarities $\{\delta_{rs}\}$ are used instead of distances $d_{rs}$ to define matrix \textbf{A}, which is then doubly centred to produce matrix \textbf{B} as just described. Then it is interesting to ask under what circumstances \textbf{B} can give rise to a configuration of points in Euclidean space, using the spectral decomposition, so that the associated distances $\{\delta_{rs}\}$ are such that $d_{rs} = \delta_{rs}$ for all $r, s$. The answer is that if \textbf{B} is positive semi-definite pf rank $p$, then configuration in $p$ dimensional Euclidean space can be found.\
+The next question to be asked is how many dimensions are  required in general for the configuration of points produced from a positive semi-definite matrix \textbf{B} of dissimilarities. It can be shown that \textbf{B} has at least one zero eigenvalue, since \textbf{B1 = HAH1 = 0}. Thus a configuration of points in an $n-1$ dimensional Euclidean space can always be found whose associated distances are equal to the dissimilarities $\{\delta_{rs}\}$. Choose the configuration in $R^k$ whose coordinates are determined by the first $k$ eigenvectors of \textbf{B}. If the first $k$ eigenvalues of \textbf{B} are "large" and positive, and hopefully, the interpoint distances of this configuration will closely approximate \textbf{D}. This configuration is called the \textit{Classical solution to the MDS problem in $k$ dimensions}. It is metric solution. \
+Another suitable question can be what will happen if \textbf{B} is not positive semi-definite. Then a constant can be added to all the dissimilarities (except the self-dissimilarities $\delta_{rr}$) which will then make \textbf{B} positive semi-definite. Thus forming new dissimilarities, $\{\delta_{rs}\prime\}$ as $\delta_{rs}\prime = \delta_{rs} + c(1 - \delta_{rs})$, where $c$ is an appropriate constant and $\delta_{rs}$ the Kronecker delta will make \textbf{B} positive semi-definite. Once \textbf{B} has been made positive semi-definite, a Euclidean space can be found as before where distances $d_{rs}$ are exactly equal to dissimilarities $\delta_{rs}\prime$.\
+
+##### \textbf{Metric Least square Scaling}\
+
