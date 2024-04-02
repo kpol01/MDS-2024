@@ -44,3 +44,38 @@ lambda<- eigen(B)$values
 #goodness of fit measure
 a12 <- (lambda[1]+lambda[2])/(sum(abs(lambda)))*100
 a22 <- (lambda[1]^2+lambda[2]^2)/(sum((lambda)^2))*100
+
+
+#PCA vs MDS
+#PCA
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+data(iris) 
+mydata <- select(iris,c(1,2,3,4))
+cor(mydata)
+mean(cor(mydata))
+#pricipal component
+PCA <- princomp(mydata)
+PCA$loadings
+PC = PCA$scores
+View(PC)
+cor(PC)
+Species <- iris$Species
+PComp <- cbind(as.data.frame(PC), Species)
+
+PComp
+pca_plot <- ggplot(data = PComp) + geom_point(aes(x = Comp.1, y = Comp.2, col = Species))
+pca_plot
+
+
+
+# Perform MDS analysis 
+mds_iris <- cbind(as.data.frame(cmdscale(dist(iris[,1:4]))), iris[,5])
+colnames(mds_iris) <- c("x", "y", "Species")
+
+ggplot(data = mds_iris, aes(x = x, y = y, color = Species)) + geom_point()
+
+gridExtra::grid.arrange(pca_plot, mds_plot, nrow = 1) 
+combined_plot <- grid.arrange(pca_plot, mds_plot, nrow = 1, top = "PCA vs MDS")
+
