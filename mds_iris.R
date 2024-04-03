@@ -79,3 +79,43 @@ ggplot(data = mds_iris, aes(x = x, y = y, color = Species)) + geom_point()
 gridExtra::grid.arrange(pca_plot, mds_plot, nrow = 1) 
 combined_plot <- grid.arrange(pca_plot, mds_plot, nrow = 1, top = "PCA vs MDS")
 
+#shephard diagram
+library(vegan)
+library(tidyverse)
+library(vegan)
+set.seed(2)
+community_matrix=read.csv("Data.csv", header = TRUE)
+
+example_NMDS=metaMDS(community_matrix, k=2)
+example_NMDS=metaMDS(community_matrix,k=2,trymax=100)
+
+stressplot(example_NMDS)
+plot(example_NMDS)
+# Analyze the structure of the stressplot
+# Notice there's an x, y and yf list
+str(stressplot(example_NMDS))
+
+# Create a tibble that contains the data from stressplot
+df <- tibble(x = stressplot(example_NMDS)$x,
+             y = stressplot(example_NMDS)$y,
+             yf = stressplot(example_NMDS)$yf) %>%
+  # Change data to long format
+  pivot_longer(cols = c(y, yf),
+               names_to = "var")
+
+# Create plot
+df %>%
+  ggplot(aes(x = x,
+             y = value)) +
+  # Add points just for y values
+  geom_point(data = df %>%
+               filter(var == "y")) +
+  # Add line just for yf values
+  geom_step(data = df %>%
+              filter(var == "yf"),
+            col = "red",
+            direction = "vh") +
+  # Change axis labels
+  labs(x = "Observed Dissimilarity", y = "Ordination Distance") +
+  # Add bw theme
+  theme_bw()
