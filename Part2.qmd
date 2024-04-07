@@ -1,0 +1,236 @@
+---
+title: "MDS"
+format: 
+  revealjs: 
+    incremental: true
+    code-fold: true
+    transition: slide
+    theme: night
+    fontsize: 150%
+execute: 
+  echo: true
+editor: visual
+---
+
+# A Practical Algorithm to Classical MDS
+
+## Algorithm:
+
+From the previous theorem, we have an idea to obtain the coordinates of the points in a Euclidean space of low dimension $k$ ($k$ is usually $1, 2,$ or $3$), when we are given an inter-point distance matrix $\mathbf{D}$ (may or may not be Euclidean).
+
+Therefore, following is an algorithm that is used in Classical MDS to determine the required solution:
+
+-   From $D = ((d_{rs}))$, construct the matrix $A = ((a_{rs}))$, such that $a_{rs} = -\frac{1}{2} d^2_{rs}$
+
+-   Obtain the matrix $B$ with elements $b_{rs} = a_{rs} − \bar a_{i·} − \bar a_{·s} + \bar a_{··}$
+
+-   Find the $k$ largest eigenvalues $λ_1 > ... > λ_k > 0$ of $B$, with corresponding eigen vectors $\mathbf{X} = (\mathbf{x_{(i)}}, ..., \mathbf{x_{(k)}})$ where $\mathbf{x_{(i)}}^T\mathbf{x_{(i)}} = λ_i, i = 1, \cdots, k$.
+
+-   The required coordinates of the points $P_r$ are $\mathbf{x_r} = (x_{r1}, ..., x_{rp})^T, r = 1, \cdots, k$, the rows of $\mathbf{X}$.
+
+## An Example
+
+Let us consider an example to see how we can apply the previous algorithm practically.
+
+Here is a glimpse of Fisher's *iris* data set available in R.
+
+```{r, echo=FALSE}
+data(iris)
+```
+
+| Row Number | Sepal Length | Sepal Width | Petal Length | Petal Width | Species    |
+|------------|------------|------------|------------|------------|------------|
+| 1          | 5.1          | 3.5         | 1.4          | 0.2         | setosa     |
+| 2          | 4.9          | 3.0         | 1.4          | 0.2         | setosa     |
+| 3          | 4.7          | 3.2         | 1.3          | 0.2         | setosa     |
+| 51         | 7.0          | 3.2         | 4.7          | 1.4         | versicolor |
+| 52         | 6.4          | 3.2         | 4.5          | 1.5         | versicolor |
+| 53         | 6.9          | 3.1         | 4.9          | 1.5         | versicolor |
+| 101        | 6.3          | 3.3         | 6.0          | 2.5         | virginica  |
+| 102        | 5.8          | 2.7         | 5.1          | 1.9         | virginica  |
+| 103        | 7.1          | 3.0         | 5.9          | 2.1         | virginica  |
+
+The data set contains measurements in centimeters of the variables "sepal length", "sepal width", "petal length" and "petal width", respectively, for 50 flowers from each of 3 species of iris : *Iris setosa*, *versicolor*, and *virginica*. We have shown here first 3 observations of each of the species.
+
+## Application of Classical MDS on iris Data
+
+```{r, warning=FALSE}
+library(ggplot2)
+library(plotly)
+# Perform MDS analysis 
+mds_iris <- cbind(as.data.frame(cmdscale(dist(iris[,1:4]))), iris[,5])
+colnames(mds_iris) <- c("x", "y", "variety")
+
+ggplot(data = mds_iris, aes(x = x, y = y, color = variety)) + geom_point()+ labs(subtitle="Finding the coordinates of points using MDS") 
+
+```
+
+Here we considered $k=2$, i.e., obtained optimal points in two dimensional space.
+
+## Observations
+
+-   Dissimilarities in the features corresponding to different flowers can be clearly observed from the plot.
+
+-   The flowers belonging to the same category are put close to each other indicating that the extent of dissimilarity between two flowers of same category is less than those between two belonging to different categories.
+
+-   Thus, MDS helps us in finding clusters among the data points.
+
+## What about starting from a Similarity Matrix!
+
+-   We may also be provided with similarities among the data points instead of distances (or dissimilarities).
+
+-   In that case, we can convert a similarity matrix $\mathbf{C} = ((c_{rs}))$ to a distance matrix $\mathbf{D} = ((d_{rs}))$, where $$d^2_{rs} = (c_{rr} - 2c_{rs} + c_{ss})$$
+
+-   Thus we obtained a distance matrix which is Euclidean too.
+
+-   Now we can apply the previous algorithm on this distance matrix $\mathbf{D}$ to obtain the coordinates of the points.
+
+# Classical Scaling and Principal Components
+
+## Duality between Principal Component Analysis and Classical MDS
+
+-   Suppose $\mathbf{X}_{n × p}$ is a data matrix (assumed to be centered), with sample covariance matrix $\mathbf{S}$
+
+-   Let $\mathbf{S}$ has eigen values ${λ_i: i = 1, \cdots, p}$ with corresponding eigen vectors ${\mathbf{e_i}: i = 1, \cdots, p}$ of $S$. Then the $i^{th}$ principal component is given by $u_i = \mathbf{e_i}^T \mathbf{x},(i = 1, \cdots, p)$.
+
+-   The dissimilarities will be given by $\delta^2_{rs} = (\mathbf{x_r} - \mathbf{x_s})^T (\mathbf{x_r} - \mathbf{x_s})$
+
+-   These dissimilarities are subjected to classical scaling, $b_{rs} = \mathbf{x_r}^T \mathbf{x_s}$ i.e., $\mathbf{B} = \mathbf{XX}^T$.
+
+-   Let the eigenvalues of $\mathbf{B}$ be $l_i (i = 1, \cdots, p)$ with associated eigen vectors $\mathbf{v_i} (i = 1, \cdots, p)$.
+
+-   The eigen values of $(\mathbf{XX}^T)_{p × p}$ are the same as those for $(\mathbf{X}^T \mathbf{X})_{n × n}$, together with an extra n − p zero eigenvalues.
+
+------------------------------------------------------------------------
+
+-   Therefore we get, \begin{equation}
+      \mathbf{XX}^T \mathbf{v_i} = l_i\mathbf{v_i}\\
+      \mathbf{X}^T \mathbf{XX}^T \mathbf{v_i} = l_i(\mathbf{X}^T\mathbf{v_i})\\
+    \end{equation}
+
+-   But $\mathbf{X}^T \mathbf{X e_i} = λ_i\mathbf{e_i}$
+
+-   So, $λ_i = l_i$ and $\mathbf{e_i} = \mathbf{X}^T \mathbf{v_i}$
+
+-   *Thus we obtained a duality between principal component analysis and Classical MDS where dissimilarities are given by Euclidean distance.*
+
+-   Observe that, $\mathbf{e_i}^T\mathbf{e_i} = l_i$
+
+-   Now, let $k \leq p$. So, $$\mathbf{X}[\frac{\mathbf{e_1}}{\sqrt{l_1}}, \frac{\mathbf{e_2}}{\sqrt{l_2}}, \cdots, \frac{\mathbf{e_k}}{\sqrt{l_k}}] = [\sqrt{l_1}\mathbf{v_1}, \sqrt{l_2}\mathbf{v_2}, \cdots, \sqrt{l_k}\mathbf{v_k}]$$ i.e., Normalizing $\mathbf{e_i}$, the first $k$ component scores are given by the coordinates obtained from classical scaling in k dimensions.
+
+## Example:
+
+Let us see how we can implement principal component analysis for *iris* dataset and compare with solution obtained in classical scaling.
+
+In classical scaling, we obtained coordinates of points in 2-dimensions. So here we will consider first two principal components.
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+data(iris) 
+mydata <- select(iris,c(1,2,3,4))
+PCA <- princomp(mydata)
+Species <- iris$Species
+PComp <- cbind(as.data.frame(PCA$scores), Species)
+pca_plot <- ggplot(data = PComp) + geom_point(aes(x = Comp.1, y = Comp.2, col = Species))+ labs(subtitle="First two principal components") 
+mds_iris <- cbind(as.data.frame(cmdscale(dist(iris[,1:4]))), iris[,5])
+colnames(mds_iris) <- c("x", "y", "Species")
+
+mds_plot <- ggplot(data = mds_iris, aes(x = x, y = y, color = Species)) + geom_point()+ labs(subtitle="Finding the coordinates of points using MDS") 
+
+```
+
+## Comparison between the plots:
+
+```{r}
+grid.arrange(grobs= list(pca_plot, mds_plot), nrow = 1, top = "PCA vs MDS")
+```
+
+
+
+### Observation:
+
+Both the plots are alike indicating the equivalence between Principal components and Solution obtained from Classical MDS.
+
+# Optimal Properties of the Classical Solution and Goodness of Fit
+
+## Fitting a Configuration
+
+-   When we are given a distance matrix $\mathbf{D}$, the objective of MDS is to find the coordinates of the points $\mathbf{\hat{x}_r}$ in a low-dimensional Euclidean space $R^k$.
+
+-   If the configuration $\mathbf{\hat{X}} = [\mathbf{\hat{x_1}}, \mathbf{\hat{x_2}}, \cdots, \mathbf{\hat{x_n}}]^T$ has inter-point distances $\mathbf{\hat{D}} = ((\hat{d_{rs}}))$, where $\hat{d_{rs}}^2 = (\mathbf{\hat{x}_r} - \mathbf{\hat{x}_s})^T(\mathbf{\hat{x}_r} - \mathbf{\hat{x}_s})$, then $\mathbf{\hat{D}}$ is fitted to $\mathbf{D}$.
+
+-   Let $\mathbf{X}$ be a configuration in $R^p$, then a fitted configuration in k dimensions can be $\mathbf{\hat{X}} = \mathbf{XL_1}$, where an orthogonal matrix $\mathbf{L}$ is partitioned as, $\mathbf{L}_{p × p} = [\mathbf{L_1, L_2}]$, $\mathbf{L_1}$ being a matrix of order $(p × k)$.
+
+-   The distances between rows of $\mathbf{X}$ are the same as the distances between the rows of $\mathbf{XL}$, $$d^2_{rs} = \sum_{i=1}^{p} (\mathbf{x_r}^T\mathbf{l_{(i)}}- \mathbf{x_r}^T\mathbf{l_{(i)}})^2$$
+
+-   The distances between the rows of $\mathbf{XL_1}$, $$\hat{d}^2_{rs} = \sum_{i=1}^{k} (\mathbf{x_r}^T\mathbf{l_{(i)}}- \mathbf{x_r}^T\mathbf{l_{(i)}})^2$$
+
+-   Thus $\hat{d}_{rs} \leq d_{rs}$ implies *Reduction in Inter-point Distances* due to projection of configuration.
+
+## Measure of Discrepancy due to fitting:
+
+A measure of discrepancy between $\mathbf{X}$ and $\mathbf{\hat{X}}$ is given by $$\phi = \sum_{r,s=1}^{n}(d^2_{rs} - \hat{d}_{rs}^2)$$
+
+
+### Optimality of the Classical Solution:
+
+The following theorem implies that the classical solution to the MDS problem is optimal.
+
+#### Theorem:
+
+*Let* $\mathbf{D}$ be a Euclidean distance matrix corresponding to a configuration $\mathbf{X}$ in $R^p$, and fix $k (1 \le k \lt p)$. Then among all projections $\mathbf{XL_1}$, of $\mathbf{X}$ onto k-dimensional subspaces of $R^p$, the quantity $\phi$ is minimized when $\mathbf{X}$ is projected onto its principal coordinates in $k$ dimensions.
+
+$$\\[0.01in]$$
+
+-   We have already seen that solutions obtained by classical MDS coincide with the principal components.
+
+-   Here we observe that the solution obtained by classical MDS provides the least measure of discrepancies.
+
+## Generalisation of Measure of Discrepancy:
+
+When $\mathbf{D}$ is not necessarily Euclidean, it is more convenient to work with the inner product matrix $\mathbf{B}$.
+
+Let $\mathbf{\hat{B}}$ denote the fitted centered inner product matrix $\mathbf{B}$.
+
+If $\mathbf{\hat{X}}$ is a fitted configuration with centered inner product matrix $\mathbf{\hat{B}}$, then a measure of discrepancy between $\mathbf{B}$ and $\mathbf{\hat{B}}$ is given by, $$\psi = \sum_{r,s=1}^{n} (b_{rs} - \hat{b}_{rs})^2 = tr(\mathbf{B}-\mathbf{\hat{B}})$$
+
+For this measure also, we can prove that the classical solution to the MDS problem is optimal by the following theorem.
+
+$$\\[0.2in]$$
+
+### Generalised version of previous Theorem:
+
+*If* $\mathbf{D}$ is a distance matrix (not necessarily Euclidean), then for fixed $k$, $\psi$ defined earlier is minimized over all configurations $\mathbf{\hat{X}}$ in $k$ dimensions when $\mathbf{\hat{X}}$ is the classical solution to the MDS problem.
+
+## Agreement Measures
+
+The previous theorems suggest possible *Agreement Measures* for the "proportion of a distance matrix $\mathbf{D}$ explained" by the $k$-dimensional classical MDS solution.
+
+Suppose $λ_1 \geq λ_2 \geq \cdots \geq λ_k \gt0$, where $k \lt n$, are $k$ non-negative eigen values of $\mathbf{B}$. Then the *Agreement Measures* are $$\alpha_{1,k} = \frac{\sum_{i=1}^{k} λ_i}{\sum_{i=1}^{n} |λ_i|} × 100 \%$$ and $$\alpha_{2,k} = \frac{\sum_{i=1}^{k} λ_i^2}{\sum_{i=1}^{n} λ_i^2} × 100 \%$$
+
+## Example:
+
+```{r}
+library(datasets)
+data(iris)
+X <- iris[, 1:4]
+distance_matrix <- dist(X, method = "euclidean")
+distance_df <- as.data.frame(as.matrix(distance_matrix))
+X <- as.matrix(distance_df)
+A <- (X)^2/(-2)
+H <- diag(c(rep(1, nrow(X)))) - matrix(1/nrow(X), nrow=nrow(X), ncol=nrow(X))
+B <- H%*%A%*%H
+lambda<- eigen(B)$values
+
+#goodness of fit measure
+a12 <- (lambda[1]+lambda[2])/(sum(abs(lambda)))*100
+a22 <- (lambda[1]^2+lambda[2]^2)/(sum((lambda)^2))*100
+
+```
+
+-   The two agreement measures obtained from *iris* data set are, $$\alpha_{1,2} = 97.7685\%$$ and $$\alpha_{2,2} = 99.9627\%$$
+
+-   Thus the two dimensional classical MDS solution explains a huge proportion of the original dissimilarity matrix.
