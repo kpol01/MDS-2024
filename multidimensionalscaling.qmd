@@ -1,0 +1,229 @@
+---
+title: "NMDS"
+
+author: "Ananyo Dey
+      <br>
+Kaustav Paul 
+      <br>
+Shreya Chatterjee"
+institute: Indian Statistical Institute, Delhi Center
+Date: "2024.04.05"
+format: 
+  revealjs: 
+    incremental: true
+    code-fold: true
+    transition: slide
+    theme: serif
+    fontsize: 200%
+execute: 
+  echo: true
+editor: visual
+---
+
+# Nonmetric Multidimensional Scaling (NMDS)
+
+## Introduction
+
+-   Here we are going to discuss some basic theory for the nonmetric multidimensional scaling. This theory is developed in the 1960s. This approach is often most appropriate when the data is presented as a similarity matrix.
+
+-   In this non-metric approach $D$ is not thought of as a *distance* matrix but as a *dissimilarity* matrix. In this situation the transformation from similarities to distances is somewhat arbitrary and greater similarity implies less dissimilarity.
+
+------------------------------------------------------------------------
+
+## Why NMDS ? {.scrollable}
+
+-   In the *MDS* is the assumption that there is a "true" configuration in $k$ dimensions with interpoint distances $\delta_{rs}$. We wish to reconstruct this configuration using an observed distance matrix $D$ whose elements are of the form $$d_{rs} = \delta_{rs} + e_{rs} $$ the $e_{rs}$ represent errors of measurement plus distortion errors arising due to the distances do not exactly correspond to a configuration io $\mathbb{R}^k$
+
+-   But in some situations it is more realistic to assume a less rigid relationship between $d_{rs}$ and $\delta_{rs}$ such as, $$d_{rs} = f(\delta_{rs} + e_{rs}) $$ where f is an unknown monotone increasing function. For this model, the only information we can use to reconstruct the $\delta_{rs}$ is the rank order of the $d_{rs}$ instead of taking the actual values.
+
+-   The use of ranks omits some of the issues associated with using absolute distance (e.g., sensitivity to transformation), and as a result is much more flexible technique that accepts a variety of types of data. (It's also where the "non-metric" part of the name comes from.)
+
+------------------------------------------------------------------------
+
+## How do we measure dissimilarity matrix ?
+
+-   It is assumed that dissimilarities $\{\delta_{rs} \}$ have been calculated for the set of objects. The set $X$ is often taken as $\mathbb{R}^2$ and $d$ as \textit{Euclidean} distance, although others are sometimes used, for example $\mathbb{R}^3$ and the *Minkowski Metric* or *Bray-Curtis* measure.
+
+-   One theoretical point, once we are using this method for estimating the disparities, the nonmetric multidimensional scaling problem becomes one of the finding an appropriate algorithm for the minimizing a loss function (we will talk later about it).
+
+------------------------------------------------------------------------
+
+## An example for approaching via non-Euclidean distances {.scrollable}
+
+-   Let's consider an example of species counts for three sites to explore the biodiversity.
+
+-   
+
+    | Site | Species_1 | Species_2 | Species_3 |
+    |:----:|:---------:|:---------:|:---------:|
+    |  A   |     0     |     1     |     1     |
+    |  B   |     1     |     0     |     0     |
+    |  C   |     0     |     4     |     4     |
+    |      |           |           |           |
+
+-   If we were to produce the Euclidean distances between each of the sites, it would look something like this:
+
+    -   $Distance_{AfromB} = \sqrt{(0-1)^2 + (1-0)^2 + (1-0)^2} = 1.732$
+
+    -   $Distance_{BfromC} = \sqrt{(1-0)^2 + (0-4)^2 + (0-4)^2} = 5.744$
+
+    -   $Distance_{AfromC} = \sqrt{(0-0)^2 + (1-4)^2 + (1-4)^2} = 4.243$
+
+------------------------------------------------------------------------
+
+## An example for approaching via non-Euclidean distances {.scrollable}
+
+-   If we use the Bray-Curtis similarity metric, which is defined in before hand. Using a Bray-Curtis similarity metric, we can recalculate similarity between the sites.
+
+    -   $Distance_{AfromB} = \frac{|0-1|+|1-0|+|1-0|}{|0+1|+|1+0|+|1+0|} = 1$
+
+    -   $Distance_{BfromC} = \frac{|1-0|+|0-4|+|0-4|}{|1+0|+|0+4|+|0+4|} = 1$
+
+    -   $Distance_{AfromC} = \frac{|0-0|+|1-4|+|1-4|}{|0+0|+|1+4|+|1+4|} = 0.6$
+
+-   From the above we got
+
+    -   Sites A and B are most similar. But it goes against according to the ecologist.
+
+    -   But they think A and C are similar as it contain same number of the species compositions which is reflected by the **Bray-Curtis** measure.
+
+# Configuration of points
+
+## Shepard-Kruskal Algorithm {.scrollable}
+
+### Some Background work and notions
+
+-   Shepard (1962a, 1962b) was the first to produce an algorithm for NMDS, although he did not use loss functions. His method was first to rank and standardize the dissimilarities such that the minimum and maximum dissimilarities were 0 and 1 respectively. The loss function is defined by: $$ \sigma(\theta,\hat{y}) = \sum_{i=1}^n  w_i(\hat{y_i}-f_i({\theta}))^2$$ with known weights.
+
+-   Kruskal (1964a, 1964b) generalizes this idea. Given a dissimilarity matrix $D$ , order the off-diagonal elements so that $$ d_{r_1s_1} \leq d_{r_2s_2} \leq \cdots \leq d_{r_ms_m}, \hspace{4mm} m=\frac{1}{2}n(n-1)$$ where where $(r_1, s_1), \cdots, (r_m, s_m)$ denote all pairs of unequal subscripts $r_i < s_i$. We will say that number $d_{rs}^*$ are monotonically related to the $d_{rs}$ if $d_{rs} < d_{uv} \Rightarrow d_{rs}^* \leq d_{uv}^* \hspace{3mm} \text{for all} \hspace{3mm} r<s, u<v ...... (C_1)$
+
+-   Let $X_{n \times k}$ be a configuration in $\mathbb{R}^k$ with interpoint distances $\hat{d_{rs}}$ where $\hat{d_{rs}} = f(d_{rs})$ where $f$ is a monotone function. Note we are deliberately ignoring the tie cases.
+
+## Stress function {.scrollable}
+
+-   Define the (squared) stress of $\hat{X}$ by $$S^2(\hat{X}) = \text{min} \sum_{r<s} \frac{(d_{rs}^* - \hat{d_{rs}})^2}{\sum_{r<s} \hat{d_{rs}}^2}$$ where minimizing is taking under $d_{rs}^*$ is taken over when it satisfies $C_1$. The minimization represents the **least squares monotone regression** of $\hat{d_{rs}}$ on $d_{rs}$.
+
+-   For each dimension $k$ the minimum stress function is calculated where minimum stress value calculation obtained by $S_k = \underset{\hat{X}_{n\times k}}{\text{min}} \hspace{1mm} S(\hat{X})$
+
+-   For the cut off there is thumb rule back ground that is,
+
+    -   Stress \> 0.2: Likely not reliable for interpretation
+
+    -   Stress \> 0.1: Likely fine for interpretation
+
+    -   Stress \< 0.05: Likely good for interpretation
+
+## Advantages
+
+-   Shepard-Kruskal algorithm is invariant under rotation, translation, and uniform expansion or contraction of the best-fining configuration.
+
+-   It is nonparatric method as it is working with the ranks of the orders.
+
+-   It can take care of the missing values and also with the ties after some modification.
+
+## An Example {.scrollable}
+
+```{r , message=FALSE, warning=FALSE, include=FALSE}
+
+library(vegan)
+library(tidyverse)
+library(RCurl)
+library(rmarkdown)
+library (htmlwidgets)
+set.seed(2)
+x <- getURL("https://raw.githubusercontent.com/kpol01/MDS-2024/main/NMDS.csv")
+community_matrix=read.csv(text=x, header = T)
+attach(community_matrix)
+example_NMDS=metaMDS(community_matrix[,3:11],k=2, distance = "bray", trymax=100)
+points <- cbind(as.data.frame(scores(example_NMDS)$sites), Habitat)
+
+```
+
+| Plot ID |  Habitat  | Holcus_lanatus | Cerastium_fontanum | Trifolium_repens | Lychnis_flos-cuculi | Calliergonella_cuspidata | Potentilla_palustris | Eleocharis_palustris | Carex_nigra | Menyanthes_trifoliata |
+|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
+|   13    | Grassland |       20       |         9          |        0         |         4.0         |           18.0           |          0           |         2.0          |     8.0     |          5.0          |
+|   14    | Grassland |       65       |         4          |        0         |         0.0         |           2.0            |          0           |         0.0          |     4.0     |          0.0          |
+|   15    | Grassland |       2        |         6          |        18        |         7.1         |           1.0            |          0           |         2.0          |     8.1     |          0.0          |
+|   16    |   Marsh   |       8        |         0          |        0         |         0.0         |           70.2           |          0           |         10.3         |    50.0     |          0.0          |
+|   17    |   Marsh   |       5        |         3          |        0         |         0.0         |           50.0           |          0           |         0.0          |     0.0     |         22.3          |
+|   18    |   Marsh   |       0        |         0          |        0         |         0.0         |           55.0           |          2           |         6.0          |    11.0     |          0.0          |
+
+------------------------------------------------------------------------
+
+```{r echo=F, fig.align='center', fig.cap="Solution of NMDS obtained from grass data", warning=FALSE, , message=FALSE}
+
+ggplot(data = points) + geom_point(mapping = aes(x = NMDS1, y = NMDS2, col = Habitat))
+
+```
+
+# Goodness fit
+
+## Shepard Diagram {auto-animate="true"}
+
+```{r,echo = FALSE,eval=FALSE}
+stress_value <- example_NMDS$stress 
+stress_value
+```
+
+-   The plot shows how much it is good, here we trying to plot the $d_{rs}$ on the horizontal axis and $\delta_{rs}$ on the vertical axis, we obtain Shepard Diagram. This shows how the dissimilarities and the approximated distances are related to each other.
+
+```{r echo = F, fig.cap="Shepard Diagram for the grass data"}
+stressplot(example_NMDS)
+```
+
+## Shepard Diagram {auto-animate="true"}
+
+```{r,echo = FALSE,eval=FALSE}
+stress_value <- example_NMDS$stress
+stress_value
+```
+
+-   The plot shows how much it is good, here we trying to plot the $d_{rs}$ on the horizontal axis and $\delta_{rs}$ on the vertical axis, we obtain Shepard Diagram. This shows how the dissimilarities and the approximated distances are related to each other.
+
+```{r echo = F, fig.cap="Shepard Diagram for the grass data"}
+stressplot(example_NMDS)
+```
+
+### Some of the observations {auto-animate="true"}
+
+-   The stress value is 0.18485 so the fitting is very good enough.
+
+-   The $R^2$ value is too large i.e. $96.6\%$ variability is being explained, so its a very good fit than linear one.
+
+-   The red line the smoothing function of the points.
+
+------------------------------------------------------------------------
+
+## Procrustes Rotation {.scrollable}
+
+-   We will now discuss about a goodness of fit measure used to compare two configurations. Let $X$ be the $(n \times p)$ matrix of the coordinates of $n$ points obtained from $D$ by one technique. Suppose that $Y$ is the $(n \times q)$ matrix of coordinates of another set of points obtained by another technique, or using another measure of distance. Let $q \leq p$ (you may work with $n \times p$)
+
+-   The measure of goodness of fit adopted is obtained by moving the points $\mathbf{y_r}$ relative to the points $\mathbf{x_r}$ until the *residual* sum of squares $$\sum_{r=1}^n = (\mathbf{y_r} − \mathbf{x_r})′ (\mathbf{y_r − x_r})$$ is minimal.
+
+-   We can move $\mathbf{y_r}$ relative to $\mathbf{x_r}$ through rotation, reflection and translation, i.e. by $$A^{'} \mathbf{y_r} + \mathbf{b}, \hspace{2mm} r = 1, \cdots, n $$ where $A^{′}$ is a $(p \times p)$ orthogonal matrix. Hence, we wish to solve $$ R^2 = \underset{\mathbf{A,b}}{\text{min}}\sum_{r=1}^n (\mathbf{x_r − A^{′}y_r − b})′(\mathbf{x_r − A^{′}y_r − b})$$
+
+## Theorem {.scrollable}
+
+-   For solving the equation quite difficult. So for that here theorem helps us.
+
+-   Let $X_{n \times p}$ and $Y_{n \times p}$ be two configurations of $n$ points, for convenience centered at the origin, so $\bar{x} = \bar{y} = 0$. Let $Z = Y^{′}X$ and using the singular value decomposition theorem, write $$Z = V \Gamma U′$$ where V and U are orthogonal (p × p) matrices and Γ is a diagonal matrix of non-negative elements. Then the minimizing values of $\mathbf{A}$ and $\mathbf{b}$ for $R^2$ defined earlier are given by $\hat{b} = 0$, $\hat{A} = VU^{′}$, and further $$R^2 = tr(XX′) + tr(YY′) − 2tr(\Gamma)$$
+
+## Comments and Conclusion {.scrollable}
+
+-   Recall **Classical Scaling**, we define $\mathbf{B = (HX)(HX)^{T}}$ where $\mathbf{H}$ is the centering matrix. Suppose $\mathbf{B}$ is not positive definite matrix then adding proper constant $c$ and forming the new dissimiarities, $\{\delta_{rs}'\}$ as $\delta_{rs}' = \delta_{rs} + c (1 - \delta^{rs})$, where $\delta^{rs}$ will make $\mathbf{B}$ positive semi-definite. Once $\mathbf{B}$ has been performed, a Euclidean space can be found as before.
+
+-   Note there are many other ways for Multidimensional Scaling.
+
+    -   For the Metric method **Metric Least Square Scaling** is one of the famous one. Here are trying to minimize our loss function suggested by Sammon (1969) $$S = \frac{\sum_{r<s}\delta_{rs}^{-1}(d_{rs} - \delta_{rs})^2}{\sum_{r<s} \delta_{rs}}$$ numerically.
+
+    -   For nonmetric method **Guttman's Approach** defined a loss function called the coefficient of alienation which was basically equivalent to the stress function of Kruskal, but which led to a different algorithm for minimization.
+
+## References
+
+-   Multivariate Analysis; Mardia K. V., Kent J. T., Bibby J. M., United States edition (1995)
+-   Multidimensional Scaling; Cox T. F., Cox M. A. A., 2nd edition (2000)
+-   Introduction to Multidimensional Scaling; Schiffman S. S., Reynolds M. L., Young F. W., United Kingdom Edition (1981)
+-   Modern Multidimensional Scaling; Borg I., Groenen P (1997)
+-   Multidimensional Scaling: Infinite Metric Measure Spaces; Kassab L (Spring 2019
+
+# Thank You :))
